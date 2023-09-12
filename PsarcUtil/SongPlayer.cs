@@ -33,7 +33,7 @@ namespace PsarcUtil
             this.PlaybackSampleRate = playbackRate;
         }
         
-        public void SetSong(PsarcDecoder decoder, string songKey, string instrument)
+        public void SetSong(PsarcDecoder decoder, string songKey, EArrangement arrangement)
         {
             PsarcSongEntry songEntry = decoder.GetSongEntry(songKey);
 
@@ -42,18 +42,18 @@ namespace PsarcUtil
                 throw new InvalidOperationException("No song entry for: " + songKey);
             }
 
-            SongArrangement arrangement = songEntry.BassArrangement;
+            SongArrangement songArrangement = songEntry.GetArrangement(arrangement);
 
-            if (arrangement == null)
+            if (songArrangement == null)
             {
-                throw new InvalidOperationException("Song has no arrangement for " + instrument);
+                throw new InvalidOperationException("Song has no arrangement for " + arrangement);
             }
 
-            SngAsset sng = decoder.GetSongAsset(songKey, instrument);
+            SngAsset sng = decoder.GetSongAsset(songKey, arrangement);
 
             if (sng == null)
             {
-                throw new InvalidOperationException("Song has no arrangement for " + instrument);
+                throw new InvalidOperationException("Song has no arrangement for " + arrangement);
             }
 
             Notes = decoder.GetNotes(sng);
@@ -62,19 +62,19 @@ namespace PsarcUtil
 
             int numStrings = 4;
 
-            if (arrangement.Attributes.Tuning != null)
+            if (songArrangement.Attributes.Tuning != null)
             {
                 // Check for fixed offset from standard tuning
-                if ((arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String2) &&
-                    (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String3) &&
-                    (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String4) &&
-                    (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String5))
+                if ((songArrangement.Attributes.Tuning.String1 == songArrangement.Attributes.Tuning.String2) &&
+                    (songArrangement.Attributes.Tuning.String1 == songArrangement.Attributes.Tuning.String3) &&
+                    (songArrangement.Attributes.Tuning.String1 == songArrangement.Attributes.Tuning.String4) &&
+                    (songArrangement.Attributes.Tuning.String1 == songArrangement.Attributes.Tuning.String5))
                 {
-                    tuningOffsetSemitones = arrangement.Attributes.Tuning.String1;
+                    tuningOffsetSemitones = songArrangement.Attributes.Tuning.String1;
                 }
             }
 
-            tuningOffsetSemitones += (double)arrangement.Attributes.CentOffset / 100.0;
+            tuningOffsetSemitones += (double)songArrangement.Attributes.CentOffset / 100.0;
 
             if (tuningOffsetSemitones == 0)
                 actualPlaybackSampleRate = PlaybackSampleRate;

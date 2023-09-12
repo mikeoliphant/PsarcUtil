@@ -150,40 +150,6 @@ namespace PsarcUtil
 
                     AddArrangement(arrangement);
                 }
-
-                //if (fileName.EndsWith("bass.sng", StringComparison.InvariantCultureIgnoreCase))
-                //{
-                //    using (MemoryStream memStream = new MemoryStream())
-                //    {
-                //        psarcFile.InflateEntry(toc, memStream);
-
-                //        SngAsset song = new();
-
-                //        song.ReadFrom(memStream);
-                //    }
-                //}
-
-                //if (fileName.EndsWith(".wem", StringComparison.InvariantCultureIgnoreCase))
-                //{
-                //    string oggFile = Path.ChangeExtension(Path.GetFileName(toc.Path), ".ogg");
-
-                //    using (Stream writer = new FileStream(Path.Combine(@"C:\tmp\RSExtract", oggFile), FileMode.Create))
-                //    {
-                //        using (MemoryStream memStream = new MemoryStream())
-                //        {
-                //            psarcFile.InflateEntry(toc, memStream);
-
-                //            var wemFile = new WEMFile(memStream, WEMSharp.WEMForcePacketFormat.NoForcePacketFormat);
-
-                //            wemFile.GenerateOGG(writer, false, false);
-                //        }
-                //    }
-                //}
-
-                //using (Stream writer = new FileStream(Path.Combine(@"C:\tmp\RSExtract", Path.GetFileName(toc.Path)), FileMode.Create))
-                //{
-                //    psarcFile.InflateEntry(toc, writer);
-                //}
             }
         }
 
@@ -203,9 +169,9 @@ namespace PsarcUtil
             return songDict[songKey];
         }
 
-        public SngAsset GetSongAsset(string songKey, string instrument)
+        public SngAsset GetSongAsset(string songKey, EArrangement arrangement)
         {
-            string tocName = songKey.ToLower() + "_" + instrument + ".sng";
+            string tocName = songKey.ToLower() + "_" + arrangement.ToString().ToLower() + ".sng";
 
             PsarcTOCEntry tocEntry = GetTOCEntry(tocName);
 
