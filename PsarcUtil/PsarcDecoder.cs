@@ -13,6 +13,15 @@ using BnkExtractor.Revorb;
 
 namespace PsarcUtil
 {
+    [Flags]
+    public enum EArrangement
+    {
+        Lead = 1,
+        Rhythm = 2,
+        Bass = 4,
+        Vocals = 8
+    }
+
     public class PsarcIndexEntry
     {
         public string SongKey { get; set; }
@@ -20,6 +29,10 @@ namespace PsarcUtil
         public string ArtistName { get; set; }
         public string AlbumName { get; set; }
         public string PsarcPath { get; set; }
+        public EArrangement Arrangements { get; set; }
+        public string LeadTuning { get; set; }
+        public string RhythmTuning { get; set;}
+        public string BassTuning { get; set; } 
     }
 
     public class PsarcIndex
@@ -87,15 +100,19 @@ namespace PsarcUtil
                     SongName = song.SongName,
                     ArtistName = song.ArtistName,
                     AlbumName = song.AlbumName,
-                    PsarcPath = psarcPath
+                    PsarcPath = psarcPath,
+                    LeadTuning = song.GetTuning(EArrangement.Lead),
+                    RhythmTuning = song.GetTuning(EArrangement.Rhythm),
+                    BassTuning = song.GetTuning(EArrangement.Bass),
                 };
                 
                 if (dict.ContainsKey(songEntry.SongKey))
                 {
-                    throw new Exception("Index already has song: " + song.SongKey);
                 }
-
-                dict[songEntry.SongKey] = songEntry;
+                else
+                {
+                    dict[songEntry.SongKey] = songEntry;
+                }
             }
         }
 
@@ -283,11 +300,7 @@ namespace PsarcUtil
             {
                 songEntry = new PsarcSongEntry()
                 {
-                    SongKey = arrangement.Attributes.SongKey,
-                    SongName = arrangement.Attributes.SongName,
-                    ArtistName = arrangement.Attributes.ArtistName,
-                    AlbumName = arrangement.Attributes.AlbumName,
-                    SongBank = arrangement.Attributes.SongBank
+                    SongKey = arrangement.Attributes.SongKey
                 };
 
                 songDict[arrangement.Attributes.SongKey] = songEntry;
@@ -295,6 +308,14 @@ namespace PsarcUtil
             else
             {
                 songEntry = songDict[arrangement.Attributes.SongKey];
+            }
+
+            if (string.IsNullOrEmpty(songEntry.SongName))
+            {
+                songEntry.SongName = arrangement.Attributes.SongName;
+                songEntry.ArtistName = arrangement.Attributes.ArtistName;
+                songEntry.AlbumName = arrangement.Attributes.AlbumName;
+                songEntry.SongBank = arrangement.Attributes.SongBank;
             }
 
             if (arrangement.Attributes.ArrangementProperties != null)
@@ -326,10 +347,95 @@ namespace PsarcUtil
         public string ArtistName { get; set; }
         public string AlbumName { get; set; }
         public string SongBank { get; set; }
-        public SongArrangement BassArrangement { get; set; }
         public SongArrangement RhythmArrangement { get; set; }
         public SongArrangement LeadArrangement { get; set; }
+        public SongArrangement BassArrangement { get; set; }
         public SongArrangement VocalArrangement { get; set; }
+
+        public SongArrangement GetArrangement(EArrangement arrangement)
+        {
+            switch (arrangement)
+            {
+                case EArrangement.Lead:
+                    return LeadArrangement;
+                case EArrangement.Rhythm:
+                    return RhythmArrangement;
+                case EArrangement.Bass:
+                    return BassArrangement;
+                case EArrangement.Vocals:
+                    return VocalArrangement;
+            }
+
+            return null;
+        }
+
+        public string GetTuning(EArrangement arrangement)
+        {
+            SongArrangement songArrangement = GetArrangement(arrangement);
+
+            if (songArrangement == null)
+                return null;
+
+            if (IsOffsetFromStandard(songArrangement))
+            {
+                string key = GetOffsetNote(songArrangement.Attributes.Tuning.String1);
+
+                if (key == null)
+                    return "Custom";
+
+                if (songArrangement.Attributes.Tuning.String0 == songArrangement.Attributes.Tuning.String1)
+                {
+                    return key;
+                }
+                else // Drop tuning
+                {                    
+                    string drop = GetOffsetNote(songArrangement.Attributes.Tuning.String0);
+
+                    if (drop == null)
+                        return "Custom";
+
+                    if (key == "E")
+                        return "Drop " + drop;
+
+                    return key + " Drop " + drop;
+                }
+            }
+
+            return "Custom";
+        }
+
+        public static bool IsOffsetFromStandard(SongArrangement arrangement)
+        {
+            return ((arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String2) &&
+                (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String3) &&
+                (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String4) &&
+                (arrangement.Attributes.Tuning.String1 == arrangement.Attributes.Tuning.String5));
+        }
+
+        public static string GetOffsetNote(int offset)
+        {
+            switch (offset)
+            {
+                case 0:
+                    return "E";
+                case 1:
+                    return "F";
+                case 2:
+                    return "F#";
+                case -1:
+                    return "Eb";
+                case -2:
+                    return "D";
+                case -3:
+                    return "C#";
+                case -4:
+                    return "C";
+                case -5:
+                    return "B";
+            }
+
+            return null;
+        }
     }
 
     //
