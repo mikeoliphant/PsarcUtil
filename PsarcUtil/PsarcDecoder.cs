@@ -389,7 +389,7 @@ namespace PsarcUtil
                 }
                 else // Drop tuning
                 {                    
-                    string drop = GetOffsetNote(songArrangement.Attributes.Tuning.String0);
+                    string drop = GetDropNote(songArrangement.Attributes.Tuning.String0);
 
                     if (drop == null)
                         return "Custom";
@@ -428,6 +428,25 @@ namespace PsarcUtil
                     return "D";
                 case -3:
                     return "C#";
+                case -4:
+                    return "C";
+                case -5:
+                    return "B";
+            }
+
+            return null;
+        }
+
+        public static string GetDropNote(int offset)
+        {
+            switch (offset)
+            {
+                case -1:
+                    return "Eb";
+                case -2:
+                    return "D";
+                case -3:
+                    return "Db";
                 case -4:
                     return "C";
                 case -5:
