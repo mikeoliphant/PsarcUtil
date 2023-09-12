@@ -10,8 +10,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\BnkExtractor\BnkExtractor\BnkExtractor.csproj" />
-	  <ProjectReference Include="..\Rocksmith2014PsarcLib\Rocksmith2014PsarcLib.csproj" />
+	  <ProjectReference Include="..\Dependencies\BnkExtractor\BnkExtractor\BnkExtractor.csproj" />
+	  <ProjectReference Include="..\Dependencies\Rocksmith2014PsarcLib\Rocksmith2014PsarcLib.csproj" />
 	</ItemGroup>
 
 </Project>

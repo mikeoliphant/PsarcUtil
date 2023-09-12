@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rocksmith2014PsarcLib", "Rocksmith2014PsarcLib\Rocksmith2014PsarcLib.csproj", "{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PsarcUtil", "PsarcUtil\PsarcUtil.csproj", "{00647335-ED1F-4A4C-9E63-A572D942340E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BnkExtractor", "BnkExtractor\BnkExtractor\BnkExtractor.csproj", "{35D280E0-1B20-4294-878D-AD9D9903D9C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rocksmith2014PsarcLib", "Dependencies\Rocksmith2014PsarcLib\Rocksmith2014PsarcLib.csproj", "{D12FE1ED-901F-4D68-961D-42786C9F9239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsarcUtil", "PsarcUtil\PsarcUtil.csproj", "{00647335-ED1F-4A4C-9E63-A572D942340E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BnkExtractor", "Dependencies\BnkExtractor\BnkExtractor\BnkExtractor.csproj", "{AB463712-8BF2-4709-BE5F-5CD64C729C10}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{B3014891-46FB-4722-A4AC-43B3036E0768}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,22 +19,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Debug|x64.ActiveCfg = Debug|x64
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Debug|x64.Build.0 = Debug|x64
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Release|x64.ActiveCfg = Release|x64
-		{F52B0F4F-8F34-4460-B95A-91F526FDDFC7}.Release|x64.Build.0 = Release|x64
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Debug|x64.Build.0 = Debug|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Release|x64.ActiveCfg = Release|Any CPU
-		{35D280E0-1B20-4294-878D-AD9D9903D9C8}.Release|x64.Build.0 = Release|Any CPU
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -41,9 +27,29 @@ Global
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Release|x64.ActiveCfg = Release|Any CPU
 		{00647335-ED1F-4A4C-9E63-A572D942340E}.Release|x64.Build.0 = Release|Any CPU
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Debug|x64.ActiveCfg = Debug|x64
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Debug|x64.Build.0 = Debug|x64
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Release|x64.ActiveCfg = Release|x64
+		{D12FE1ED-901F-4D68-961D-42786C9F9239}.Release|x64.Build.0 = Release|x64
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D12FE1ED-901F-4D68-961D-42786C9F9239} = {B3014891-46FB-4722-A4AC-43B3036E0768}
+		{AB463712-8BF2-4709-BE5F-5CD64C729C10} = {B3014891-46FB-4722-A4AC-43B3036E0768}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42172109-188F-4319-A657-2BEBCFBDDCD0}
