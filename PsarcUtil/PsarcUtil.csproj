@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="NVorbis" Version="0.10.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\BnkExtractor\BnkExtractor\BnkExtractor.csproj" />
+	  <ProjectReference Include="..\Rocksmith2014PsarcLib\Rocksmith2014PsarcLib.csproj" />
+	</ItemGroup>
+
+</Project>
