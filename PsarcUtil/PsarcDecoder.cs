@@ -214,12 +214,26 @@ namespace PsarcUtil
 
         public VorbisReader GetVorbisReader(string songKey)
         {
+            MemoryStream revorbStream = new MemoryStream();
+
+            WriteOgg(songKey, revorbStream);
+
+            // Have to re-open because RevorbSharp closes the output stream...
+            revorbStream = new MemoryStream(revorbStream.GetBuffer());
+
+            revorbStream.Seek(0, SeekOrigin.Begin);
+
+            return new VorbisReader(revorbStream, true);
+        }
+
+        public void WriteOgg(string songKey, Stream outputStream)
+        {
             PsarcSongEntry songEntry = songDict[songKey];
 
             PsarcTOCEntry bankEntry = GetTOCEntry(songEntry.SongBank);
 
             if (bankEntry == null)
-                return null;
+                throw new InvalidOperationException("Song key [" + songKey + "] has no song bank entry");
 
             BkhdAsset bank = psarcFile.InflateEntry<BkhdAsset>(bankEntry);
 
@@ -228,9 +242,7 @@ namespace PsarcUtil
             PsarcTOCEntry wemEntry = GetTOCEntry(wemID + ".wem");
 
             if (wemEntry == null)
-                return null;
-
-            MemoryStream revorbStream = new MemoryStream();
+                throw new InvalidOperationException("Song key [" + songKey + "] has no wem file");
 
             using (MemoryStream oggStream = new MemoryStream())
             {
@@ -247,15 +259,8 @@ namespace PsarcUtil
 
                 oggStream.Seek(0, SeekOrigin.Begin);
 
-                RevorbSharp.Convert(oggStream, revorbStream);
-
-                // Have to re-open because RevorbSharp closes the output stream...
-                revorbStream = new MemoryStream(revorbStream.GetBuffer());
-
-                revorbStream.Seek(0, SeekOrigin.Begin);
+                RevorbSharp.Convert(oggStream, outputStream);
             }
-
-            return new VorbisReader(revorbStream, true);
         }
 
         void AddArrangement(SongArrangement arrangement)
