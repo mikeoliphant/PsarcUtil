@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PsarcUtil\PsarcUtil.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\BassJam\SongFormat\SongFormat.projitems" Label="Shared" />
+
+</Project>
