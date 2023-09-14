@@ -8,9 +8,9 @@ namespace PsarcExtract
     {
         public static void Main(string[] args)
         {
-            if (args.Length < 1)
+            if (args.Length < 2)
             {
-                Console.WriteLine("\nUsage: PsarcExtract <path>\n");
+                Console.WriteLine("\nUsage: PsarcExtract <PsarcPath> <ExtractPath>\n");
 
                 return;
             }
@@ -28,24 +28,26 @@ namespace PsarcExtract
 
                 PsarcDecoder decoder = new PsarcDecoder(psarcPath);
 
-                foreach (PsarcSongEntry song in decoder.AllSongs)
-                {
-                    Console.WriteLine("Extracting song key: " + song.SongKey + " (" + song.ArtistName + " - " + song.SongName + ")");
+                decoder.ExtractAll(args[1]);
 
-                    Directory.CreateDirectory(song.SongKey);
+                //foreach (PsarcSongEntry song in decoder.AllSongs)
+                //{
+                //    Console.WriteLine("Extracting song key: " + song.SongKey + " (" + song.ArtistName + " - " + song.SongName + ")");
 
-                    using (Stream outputStream = File.Create(Path.Combine(song.SongKey, "Song.ogg")))
-                    {
-                        TextWriter consoleOut = Console.Out;
+                //    Directory.CreateDirectory(song.SongKey);
 
-                        // Suppress Ww2ogg logging
-                        Console.SetOut(TextWriter.Null);
+                //    using (Stream outputStream = File.Create(Path.Combine(song.SongKey, "Song.ogg")))
+                //    {
+                //        TextWriter consoleOut = Console.Out;
+
+                //        // Suppress Ww2ogg logging
+                //        Console.SetOut(TextWriter.Null);
                         
-                        decoder.WriteOgg(song.SongKey, outputStream);
+                //        decoder.WriteOgg(song.SongKey, outputStream);
 
-                        Console.SetOut(consoleOut);
-                    }
-                }
+                //        Console.SetOut(consoleOut);
+                //    }
+                //}
             }
             catch (Exception ex)
             {

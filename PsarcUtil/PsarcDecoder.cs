@@ -13,115 +13,6 @@ using BnkExtractor.Revorb;
 
 namespace PsarcUtil
 {
-    [Flags]
-    public enum EArrangement
-    {
-        Lead = 1,
-        Rhythm = 2,
-        Bass = 4,
-        Vocals = 8
-    }
-
-    public class PsarcIndexEntry
-    {
-        public string SongKey { get; set; }
-        public string SongName { get; set; }
-        public string ArtistName { get; set; }
-        public string AlbumName { get; set; }
-        public string PsarcPath { get; set; }
-        public EArrangement Arrangements { get; set; }
-        public string LeadTuning { get; set; }
-        public string RhythmTuning { get; set;}
-        public string BassTuning { get; set; } 
-    }
-
-    public class PsarcIndex
-    {
-        Dictionary<string, PsarcIndexEntry> dict = new Dictionary<string, PsarcIndexEntry>();
-
-        public List<PsarcIndexEntry> GetSongList()
-        {
-            return dict.Values.ToList();
-        }
-
-        public bool LoadFromJson(string jsonPath)
-        {
-            if (!File.Exists(jsonPath))
-            {
-                return false;
-            }
-
-            List<PsarcIndexEntry> songs;
-
-            using (FileStream stream = File.OpenRead(jsonPath))
-            {
-                songs = JsonSerializer.Deserialize(stream, typeof(List<PsarcIndexEntry>)) as List<PsarcIndexEntry>;
-            }
-            
-            foreach (var song in songs)
-            {
-                dict[song.SongKey] = song;
-            }
-
-            return true;
-        }
-
-        public void WriteJson(string jsonPath)
-        {
-            using (FileStream stream = File.Create(jsonPath))
-            {
-                JsonSerializer.Serialize(stream, GetSongList());
-            }
-        }
-
-        public void AddPsarcFolder(string folderPath)
-        {
-            foreach (string path in Directory.GetFiles(folderPath, "*.psarc"))
-            {
-                AddPsarc(path);
-            }
-        }
-
-        public void AddPsarc(string psarcPath)
-        {
-            // This file has song entries, but no audio
-            if (Path.GetFileName(psarcPath) == "rs1compatibilitydlc_p.psarc")
-            {
-                return;
-            }
-                
-            PsarcDecoder decoder = new PsarcDecoder(psarcPath);
-
-            foreach (PsarcSongEntry song in decoder.AllSongs)
-            {
-                PsarcIndexEntry songEntry = new PsarcIndexEntry()
-                {
-                    SongKey = song.SongKey,
-                    SongName = song.SongName,
-                    ArtistName = song.ArtistName,
-                    AlbumName = song.AlbumName,
-                    PsarcPath = psarcPath,
-                    LeadTuning = song.GetTuning(EArrangement.Lead),
-                    RhythmTuning = song.GetTuning(EArrangement.Rhythm),
-                    BassTuning = song.GetTuning(EArrangement.Bass),
-                };
-                
-                if (dict.ContainsKey(songEntry.SongKey))
-                {
-                }
-                else
-                {
-                    dict[songEntry.SongKey] = songEntry;
-                }
-            }
-        }
-
-        public PsarcDecoder GetPsarcDecoder(string songKey)
-        {
-            return new PsarcDecoder(dict[songKey].PsarcPath);
-        }
-    }
-
     public class PsarcDecoder
     {
         PsarcFile psarcFile;
@@ -146,9 +37,25 @@ namespace PsarcUtil
 
                 if (fileName.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    SongArrangement arrangement = psarcFile.InflateEntry<JsonObjectAsset<SongArrangement>>(toc).JsonObject;
+                    AddArrangement(toc);
+                }
+            }
+        }
 
-                    AddArrangement(arrangement);
+        public void ExtractAll(string destPath)
+        {
+            foreach (var toc in psarcFile.TOC.Entries)
+            {
+                string dir = Path.Combine(destPath, Path.GetDirectoryName(toc.Path));
+
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                using (Stream stream = File.Create(Path.Combine(destPath, toc.Path)))
+                {
+                    psarcFile.InflateEntry(toc, stream);
                 }
             }
         }
@@ -169,9 +76,9 @@ namespace PsarcUtil
             return songDict[songKey];
         }
 
-        public SngAsset GetSongAsset(string songKey, EArrangement arrangement)
+        public SngAsset GetSongAsset(string songKey, string arrangement)
         {
-            string tocName = songKey.ToLower() + "_" + arrangement.ToString().ToLower() + ".sng";
+            string tocName = songKey.ToLower() + "_" + arrangement + ".sng";
 
             PsarcTOCEntry tocEntry = GetTOCEntry(tocName);
 
@@ -263,8 +170,10 @@ namespace PsarcUtil
             }
         }
 
-        void AddArrangement(SongArrangement arrangement)
+        void AddArrangement(PsarcTOCEntry toc)
         {
+            SongArrangement arrangement = psarcFile.InflateEntry<JsonObjectAsset<SongArrangement>>(toc).JsonObject;
+
             PsarcSongEntry songEntry = null;
 
             if (!songDict.ContainsKey(arrangement.Attributes.SongKey))
@@ -289,25 +198,9 @@ namespace PsarcUtil
                 songEntry.SongBank = arrangement.Attributes.SongBank;
             }
 
-            if (arrangement.Attributes.ArrangementProperties != null)
-            {
-                if (arrangement.Attributes.ArrangementProperties.PathBass == 1)
-                {
-                    songEntry.BassArrangement = arrangement;
-                }
-                else if (arrangement.Attributes.ArrangementProperties.PathRhythm == 1)
-                {
-                    songEntry.RhythmArrangement = arrangement;
-                }
-                else if (arrangement.Attributes.ArrangementProperties.PathLead == 1)
-                {
-                    songEntry.LeadArrangement = arrangement;
-                }
-            }
-            else
-            {
-                songEntry.VocalArrangement = arrangement;
-            }
+            string arrangementName = Path.GetFileNameWithoutExtension(toc.Path).Replace(arrangement.Attributes.SongKey.ToLower() + "_", "");
+
+            songEntry.Arrangements[arrangementName] = arrangement;
         }
     }
 
@@ -318,32 +211,15 @@ namespace PsarcUtil
         public string ArtistName { get; set; }
         public string AlbumName { get; set; }
         public string SongBank { get; set; }
-        public SongArrangement RhythmArrangement { get; set; }
-        public SongArrangement LeadArrangement { get; set; }
-        public SongArrangement BassArrangement { get; set; }
-        public SongArrangement VocalArrangement { get; set; }
+        public Dictionary<string, SongArrangement> Arrangements { get; private set; } = new Dictionary<string, SongArrangement>();
 
-        public SongArrangement GetArrangement(EArrangement arrangement)
+        public SongArrangement GetArrangement(string arrangement)
         {
-            switch (arrangement)
-            {
-                case EArrangement.Lead:
-                    return LeadArrangement;
-                case EArrangement.Rhythm:
-                    return RhythmArrangement;
-                case EArrangement.Bass:
-                    return BassArrangement;
-                case EArrangement.Vocals:
-                    return VocalArrangement;
-            }
-
-            return null;
+            return Arrangements[arrangement];
         }
 
-        public string GetTuning(EArrangement arrangement)
+        public string GetTuning(SongArrangement songArrangement)
         {
-            SongArrangement songArrangement = GetArrangement(arrangement);
-
             if (songArrangement == null)
                 return null;
 
