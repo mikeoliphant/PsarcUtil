@@ -11,6 +11,7 @@ using Rocksmith2014PsarcLib.Psarc.Models.Sng;
 using System.Text.RegularExpressions;
 using Org.BouncyCastle.Asn1.Crmf;
 using System.Linq;
+using Org.BouncyCastle.Utilities;
 
 namespace PsarcConverter
 {
@@ -166,54 +167,77 @@ namespace PsarcConverter
                 part.InstrumentType = ESongInstrumentType.BassGuitar;
             }
 
-
-            if (arrangement.Attributes.Tuning != null)
+            if (part.InstrumentType == ESongInstrumentType.Vocals)
             {
-                part.Tuning = new StringTuning()
+                List<SongVocal> vocals = new List<SongVocal>();
+
+                if (songAsset.Vocals != null)
                 {
-                    StringSemitoneOffsets = new List<int> { arrangement.Attributes.Tuning.String0, arrangement.Attributes.Tuning.String1, arrangement.Attributes.Tuning.String2, arrangement.Attributes.Tuning.String3, arrangement.Attributes.Tuning.String4 }
-                };
+                    foreach (Vocal vocal in songAsset.Vocals)
+                    {
+                        vocals.Add(new SongVocal()
+                        {
+                            Vocal = vocal.Lyric.Replace('+', '\n'),
+                            TimeOffset = vocal.Time
+                        });
+                    }
+
+                    using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
+                    {
+                        JsonSerializer.Serialize(stream, vocals);
+                    }
+                }
             }
-
-            SongInstrumentNotes notes = new SongInstrumentNotes();
-
-            foreach (Chord chord in songAsset.Chords)
+            else
             {
-                SongChord songChord = new SongChord()
+                if (arrangement.Attributes.Tuning != null)
                 {
-                    Name = chord.Name,
-                    Fingers = new List<int>(chord.Fingers.Select(f => (int)((sbyte)f))),
-                    Frets = new List<int>(chord.Frets.Select(f => (int)((sbyte)f)))
-                };
-
-                notes.Chords.Add(songChord);
-            }
-
-            foreach (Note note in decoder.GetNotes(songAsset))
-            {
-                SongNote songNote = new SongNote()
-                {
-                    TimeOffset = note.Time,
-                    TimeLength = note.Sustain,
-                    Fret = (sbyte)note.FretId,
-                    String = (sbyte)note.StringIndex,
-                    Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
-                    HandFret = (sbyte)note.AnchorFretId,
-                    SlideFret = (sbyte)note.SlideTo,
-                    ChordID = (sbyte)note.ChordId
-                };
-
-                if (songNote.SlideFret <= 0)
-                {
-                    songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
+                    part.Tuning = new StringTuning()
+                    {
+                        StringSemitoneOffsets = new List<int> { arrangement.Attributes.Tuning.String0, arrangement.Attributes.Tuning.String1, arrangement.Attributes.Tuning.String2, arrangement.Attributes.Tuning.String3, arrangement.Attributes.Tuning.String4 }
+                    };
                 }
 
-                notes.Notes.Add(songNote);
-            }
+                SongInstrumentNotes notes = new SongInstrumentNotes();
 
-            using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
-            {
-                JsonSerializer.Serialize(stream, notes);
+                foreach (Chord chord in songAsset.Chords)
+                {
+                    SongChord songChord = new SongChord()
+                    {
+                        Name = chord.Name,
+                        Fingers = new List<int>(chord.Fingers.Select(f => (int)((sbyte)f))),
+                        Frets = new List<int>(chord.Frets.Select(f => (int)((sbyte)f)))
+                    };
+
+                    notes.Chords.Add(songChord);
+                }
+
+                foreach (Note note in decoder.GetNotes(songAsset))
+                {
+                    SongNote songNote = new SongNote()
+                    {
+                        TimeOffset = note.Time,
+                        TimeLength = note.Sustain,
+                        Fret = (sbyte)note.FretId,
+                        String = (sbyte)note.StringIndex,
+                        Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
+                        HandFret = (sbyte)note.AnchorFretId,
+                        SlideFret = (sbyte)note.SlideTo,
+                        ChordID = (sbyte)note.ChordId
+                    };
+
+                    if (songNote.SlideFret <= 0)
+                    {
+                        songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
+                    }
+
+                    notes.Notes.Add(songNote);
+                }
+
+                using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
+                {
+                    JsonSerializer.Serialize(stream, notes);
+                }
             }
 
             return part;
