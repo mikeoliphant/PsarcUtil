@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Org.BouncyCastle.Asn1.Crmf;
 using System.Linq;
 using Org.BouncyCastle.Utilities;
+using OggVorbisSharp;
 
 namespace PsarcConverter
 {
@@ -87,6 +88,8 @@ namespace PsarcConverter
 
                         SngAsset asset = decoder.GetSongAsset(songEntry.SongKey, arrangementName);
 
+                        List<SongSection> partSections = new List<SongSection>();
+
                         if (asset != null)
                         {
                             if ((asset.BPMs != null) && (asset.BPMs.Length > songStructure.Beats.Count))
@@ -103,7 +106,26 @@ namespace PsarcConverter
                                 }
                             }
 
-                            songData.InstrumentParts.Add(CreateInstrumentPart(songDir, arrangementName, arrangement, asset, decoder));
+                            if (asset.Sections != null)
+                            {
+                                songStructure.Sections.Clear();
+
+                                foreach (Section section in asset.Sections)
+                                {
+                                    SongSection songSection = new SongSection
+                                    {
+                                        Name = section.Name,
+                                        StartTime = section.StartTime,
+                                        EndTime = section.EndTime
+                                    };
+
+                                    partSections.Add(songSection);
+                                }
+                            }
+
+                            SongInstrumentPart part = CreateInstrumentPart(songDir, arrangementName, partSections, arrangement, asset, decoder);
+
+                            songData.InstrumentParts.Add(part);
 
                             songData.A440CentsOffset = arrangement.Attributes.CentOffset;
                         }
@@ -143,7 +165,7 @@ namespace PsarcConverter
             return Regex.Replace(path, "[^a-zA-Z0-9]", String.Empty).Trim();
         }
 
-        SongInstrumentPart CreateInstrumentPart(string songDir, string partName, SongArrangement arrangement, SngAsset songAsset, PsarcDecoder decoder)
+        SongInstrumentPart CreateInstrumentPart(string songDir, string partName, List<SongSection> partSections, SongArrangement arrangement, SngAsset songAsset, PsarcDecoder decoder)
         {
             SongInstrumentPart part = new SongInstrumentPart()
             {
@@ -199,6 +221,8 @@ namespace PsarcConverter
                 }
 
                 SongInstrumentNotes notes = new SongInstrumentNotes();
+
+                notes.Sections = partSections;
 
                 foreach (Chord chord in songAsset.Chords)
                 {
