@@ -255,6 +255,20 @@ namespace PsarcConverter
                         songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
                     }
 
+                    if ((note.BendData != null) && (note.BendData.Length > 0))
+                    {
+                        songNote.CentsOffsets = new CentsOffset[note.BendData.Length];
+
+                        for (int i = 0; i < note.BendData.Length; i++)
+                        {
+                            songNote.CentsOffsets[i] = new CentsOffset()
+                            {
+                                TimeOffset = note.BendData[i].Time,
+                                Cents = (int)(note.BendData[i].Step * 100)
+                            };
+                        };
+                    }
+
                     notes.Notes.Add(songNote);
                 }
 
@@ -312,6 +326,9 @@ namespace PsarcConverter
 
             if (noteMask.HasFlag(NoteMaskFlag.CHORD))
                 technique |= ESongNoteTechnique.Chord;
+
+            if (noteMask.HasFlag(NoteMaskFlag.BEND))
+                technique |= ESongNoteTechnique.Bend;
 
             return technique;
         }
