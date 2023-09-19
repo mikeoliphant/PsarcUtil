@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PsarcUtil;
 using SongFormat;
 using Rocksmith2014PsarcLib.Psarc.Asset;
 using Rocksmith2014PsarcLib.Psarc.Models.Json;
 using Rocksmith2014PsarcLib.Psarc.Models.Sng;
 using System.Text.RegularExpressions;
-using Org.BouncyCastle.Asn1.Crmf;
 using System.Linq;
-using Org.BouncyCastle.Utilities;
-using OggVorbisSharp;
+using System.Collections;
+using System.Text.Json.Serialization.Metadata;
+using System.Reflection;
 
 namespace PsarcConverter
 {
@@ -21,10 +21,36 @@ namespace PsarcConverter
         string destPath;
         bool convertAudio = false;
 
-        JsonSerializerOptions serializerOptions = new JsonSerializerOptions()
+        JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions()
         {
-            WriteIndented = true,            
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver
+            {
+                Modifiers = { DefaultValueModifier }
+            },
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            WriteIndented = true,
         };
+
+        JsonSerializerOptions condensedSerializerOptions = new JsonSerializerOptions()
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver
+            {
+                Modifiers = { DefaultValueModifier }
+            },
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+        };
+
+        private static void DefaultValueModifier(JsonTypeInfo typeInfo)
+        {
+            if (typeInfo.Kind != JsonTypeInfoKind.Object)
+                return;
+
+            foreach (var property in typeInfo.Properties)
+                if (property.PropertyType == typeof(int))
+                {
+                    property.ShouldSerialize = (_, val) => ((int)val != -1);
+                }
+        }
 
         public PsarcConverter(string destPath, bool convertAudio)
         {
@@ -135,12 +161,12 @@ namespace PsarcConverter
 
                 using (FileStream stream = File.Create(Path.Combine(songDir, "song.json")))
                 {
-                    JsonSerializer.Serialize(stream, songData, serializerOptions);
+                    JsonSerializer.Serialize(stream, songData, indentedSerializerOptions);
                 }
 
                 using (FileStream stream = File.Create(Path.Combine(songDir, "arrangement.json")))
                 {
-                    JsonSerializer.Serialize(stream, songStructure, serializerOptions);
+                    JsonSerializer.Serialize(stream, songStructure, indentedSerializerOptions);
                 }
 
                 if (convertAudio)
@@ -206,7 +232,7 @@ namespace PsarcConverter
 
                     using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
                     {
-                        JsonSerializer.Serialize(stream, vocals);
+                        JsonSerializer.Serialize(stream, vocals, condensedSerializerOptions);
                     }
                 }
             }
@@ -274,7 +300,7 @@ namespace PsarcConverter
 
                 using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
                 {
-                    JsonSerializer.Serialize(stream, notes);
+                    JsonSerializer.Serialize(stream, notes, condensedSerializerOptions);
                 }
             }
 
