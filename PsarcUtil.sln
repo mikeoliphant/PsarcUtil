@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PsarcExtract", "Utils\Psarc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PsarcConverter", "Utils\PsarcConverter\PsarcConverter.csproj", "{4610B529-50FC-4132-9484-A40EF3FBBF4A}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SongFormat", "..\BassJam\SongFormat\SongFormat.shproj", "{595D9376-81D5-4163-9045-BD1D72A45B16}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SongFormat", "Dependencies\OpenSongChart\SongFormat\SongFormat.shproj", "{595D9376-81D5-4163-9045-BD1D72A45B16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,12 +76,13 @@ Global
 		{AB463712-8BF2-4709-BE5F-5CD64C729C10} = {B3014891-46FB-4722-A4AC-43B3036E0768}
 		{F6C3CFBD-79F2-45B3-A540-44975B6CD437} = {EF87697F-C9B5-43A9-91BC-5E8475F23516}
 		{4610B529-50FC-4132-9484-A40EF3FBBF4A} = {EF87697F-C9B5-43A9-91BC-5E8475F23516}
+		{595D9376-81D5-4163-9045-BD1D72A45B16} = {B3014891-46FB-4722-A4AC-43B3036E0768}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42172109-188F-4319-A657-2BEBCFBDDCD0}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\BassJam\SongFormat\SongFormat.projitems*{4610b529-50fc-4132-9484-a40ef3fbbf4a}*SharedItemsImports = 5
-		..\BassJam\SongFormat\SongFormat.projitems*{595d9376-81d5-4163-9045-bd1d72a45b16}*SharedItemsImports = 13
+		Dependencies\OpenSongChart\SongFormat\SongFormat.projitems*{4610b529-50fc-4132-9484-a40ef3fbbf4a}*SharedItemsImports = 5
+		Dependencies\OpenSongChart\SongFormat\SongFormat.projitems*{595d9376-81d5-4163-9045-bd1d72a45b16}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

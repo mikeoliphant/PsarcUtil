@@ -275,7 +275,7 @@ namespace PsarcConverter
                         SlideFret = (sbyte)note.SlideTo,
                         ChordID = (sbyte)note.ChordId
                     };
-
+                    
                     if (songNote.SlideFret <= 0)
                     {
                         songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
@@ -287,12 +287,55 @@ namespace PsarcConverter
 
                         for (int i = 0; i < note.BendData.Length; i++)
                         {
-                            songNote.CentsOffsets[i] = new CentsOffset()
+                            songNote.CentsOffsets[i] = new CentsOffset
                             {
                                 TimeOffset = note.BendData[i].Time,
                                 Cents = (int)(note.BendData[i].Step * 100)
                             };
                         };
+                    }
+
+                    if (note.ChordNotesId != -1)
+                    {
+                        ChordNotes chordNotes = songAsset.ChordNotes[note.ChordNotesId];
+
+                        for (int str = 0; str < 6; str++)
+                        {
+                            if ((chordNotes.BendData[str].UsedCount > 0) || (chordNotes.NoteMask[str] != 0) || (chordNotes.Vibrato[str] > 0) || (((sbyte)chordNotes.SlideTo[str]) != -1) || (((sbyte)chordNotes.SlideUnpitchTo[str]) != -1))
+                            {
+                                SongNote chordNote = songNote;
+
+                                chordNote.String = str;
+                                chordNote.Fret = notes.Chords[songNote.ChordID].Frets[str];
+                                chordNote.ChordID = -1;
+
+                                if (chordNotes.BendData[str].UsedCount > 0)
+                                {
+                                    chordNote.CentsOffsets = new CentsOffset[chordNotes.BendData[str].UsedCount];
+
+                                    for (int i = 0; i < chordNotes.BendData[str].UsedCount; i++)
+                                    {
+                                        chordNote.CentsOffsets[i] = new CentsOffset()
+                                        {
+                                            TimeOffset = chordNotes.BendData[str].BendData32[i].Time,
+                                            Cents = (int)(chordNotes.BendData[str].BendData32[i].Step * 100)
+                                        };
+                                    }
+                                }
+
+                                chordNote.Techniques = ConvertTechniques((NoteMaskFlag)chordNotes.NoteMask[str]);
+                                chordNote.SlideFret = (sbyte)chordNotes.SlideTo[str];
+
+                                if (songNote.SlideFret <= 0)
+                                {
+                                    songNote.SlideFret = (sbyte)chordNotes.SlideUnpitchTo[str];
+                                }
+
+                                notes.Notes.Add(chordNote);
+                            }
+                        }
+
+                        songNote.TimeLength = 0;
                     }
 
                     notes.Notes.Add(songNote);
@@ -355,6 +398,9 @@ namespace PsarcConverter
 
             if (noteMask.HasFlag(NoteMaskFlag.BEND))
                 technique |= ESongNoteTechnique.Bend;
+
+            if (noteMask.HasFlag(NoteMaskFlag.CHILD))
+                technique |= ESongNoteTechnique.Continued;
 
             return technique;
         }

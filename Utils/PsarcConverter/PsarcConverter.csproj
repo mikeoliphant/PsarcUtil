@@ -10,6 +10,6 @@
     <ProjectReference Include="..\..\PsarcUtil\PsarcUtil.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\..\BassJam\SongFormat\SongFormat.projitems" Label="Shared" />
+  <Import Project="..\..\Dependencies\OpenSongChart\SongFormat\SongFormat.projitems" Label="Shared" />
 
 </Project>
