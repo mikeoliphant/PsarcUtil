@@ -4,3 +4,6 @@
 [submodule "Rocksmith2014PsarcLib"]
 	path = Dependencies/Rocksmith2014PsarcLib
 	url = https://github.com/mikeoliphant/Rocksmith2014PsarcLib
+[submodule "OpenSongChart"]
+	path = Dependencies/OpenSongChart
+	url = https://github.com/mikeoliphant/OpenSongChart
