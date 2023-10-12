@@ -366,6 +366,9 @@ namespace PsarcConverter
             if (noteMask.HasFlag(NoteMaskFlag.PALMMUTE))
                 technique |= ESongNoteTechnique.PalmMute;
 
+            if (noteMask.HasFlag(NoteMaskFlag.MUTE) && !noteMask.HasFlag(NoteMaskFlag.FRETHANDMUTE))
+                technique |= ESongNoteTechnique.PalmMute;
+
             if (noteMask.HasFlag(NoteMaskFlag.FRETHANDMUTE))
                 technique |= ESongNoteTechnique.FretHandMute;
 
