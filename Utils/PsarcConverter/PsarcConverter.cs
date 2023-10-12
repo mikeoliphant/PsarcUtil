@@ -297,6 +297,8 @@ namespace PsarcConverter
 
                     if (note.ChordNotesId != -1)
                     {
+                        songNote.Techniques |= ESongNoteTechnique.ChordNote;
+
                         ChordNotes chordNotes = songAsset.ChordNotes[note.ChordNotesId];
 
                         for (int str = 0; str < 6; str++)
@@ -307,7 +309,8 @@ namespace PsarcConverter
 
                                 chordNote.String = str;
                                 chordNote.Fret = notes.Chords[songNote.ChordID].Frets[str];
-                                chordNote.ChordID = -1;
+                                chordNote.ChordID = note.ChordId;
+                                chordNote.Techniques |= ESongNoteTechnique.ChordNote;
 
                                 if (chordNotes.BendData[str].UsedCount > 0)
                                 {
