@@ -23,6 +23,9 @@ namespace PsarcConverter
 
         JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions()
         {
+            Converters ={
+               new JsonStringEnumConverter()
+            },
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
             {
                 Modifiers = { DefaultValueModifier }
@@ -33,6 +36,9 @@ namespace PsarcConverter
 
         JsonSerializerOptions condensedSerializerOptions = new JsonSerializerOptions()
         {
+            Converters ={
+               new JsonStringEnumConverter()
+            },
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
             {
                 Modifiers = { DefaultValueModifier }
@@ -153,7 +159,8 @@ namespace PsarcConverter
 
                             songData.InstrumentParts.Add(part);
 
-                            songData.A440CentsOffset = arrangement.Attributes.CentOffset;
+                            if (songData.A440CentsOffset == 0)
+                                songData.A440CentsOffset = arrangement.Attributes.CentOffset;
                         }
                     }
                     catch { }
