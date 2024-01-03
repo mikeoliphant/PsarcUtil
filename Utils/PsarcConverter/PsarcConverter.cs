@@ -304,13 +304,16 @@ namespace PsarcConverter
 
                     if (note.ChordNotesId != -1)
                     {
-                        songNote.Techniques |= ESongNoteTechnique.ChordNote;
-
                         ChordNotes chordNotes = songAsset.ChordNotes[note.ChordNotesId];
+
+                        SongChord chord = notes.Chords[note.ChordId];
+
+                        List<SongNote> notesToAdd = new List<SongNote>();
 
                         for (int str = 0; str < 6; str++)
                         {
-                            if ((chordNotes.BendData[str].UsedCount > 0) || (chordNotes.NoteMask[str] != 0) || (chordNotes.Vibrato[str] > 0) || (((sbyte)chordNotes.SlideTo[str]) != -1) || (((sbyte)chordNotes.SlideUnpitchTo[str]) != -1))
+                            //if ((chordNotes.BendData[str].UsedCount > 0) || (chordNotes.NoteMask[str] != 0) || (chordNotes.Vibrato[str] > 0) || (((sbyte)chordNotes.SlideTo[str]) != -1) || (((sbyte)chordNotes.SlideUnpitchTo[str]) != -1))
+                            if (chord.Frets[str] != -1)
                             {
                                 SongNote chordNote = songNote;
 
@@ -336,16 +339,45 @@ namespace PsarcConverter
                                 chordNote.Techniques = ConvertTechniques((NoteMaskFlag)chordNotes.NoteMask[str]);
                                 chordNote.SlideFret = (sbyte)chordNotes.SlideTo[str];
 
-                                if (songNote.SlideFret <= 0)
+                                if (chordNote.SlideFret <= 0)
                                 {
-                                    songNote.SlideFret = (sbyte)chordNotes.SlideUnpitchTo[str];
+                                    chordNote.SlideFret = (sbyte)chordNotes.SlideUnpitchTo[str];
                                 }
 
-                                notes.Notes.Add(chordNote);
+                                notesToAdd.Add(chordNote);
                             }
                         }
 
-                        songNote.TimeLength = 0;
+                        if (notesToAdd.Count > 0)
+                        {
+                            bool haveNotes = false;
+
+                            for (int i = 0; i < notesToAdd.Count; i++)
+                            {
+                                if ((notesToAdd[i].Techniques != notesToAdd[0].Techniques) || (notesToAdd[i].SlideFret != -1) || (notesToAdd[i].CentsOffsets != null))
+                                {
+                                    haveNotes = true;
+
+                                    break;
+                                }
+                            }
+
+                            if (haveNotes)
+                            {
+                                foreach (SongNote toAdd in notesToAdd)
+                                {
+                                    notes.Notes.Add(toAdd);
+                                }
+
+                                songNote.Techniques |= ESongNoteTechnique.ChordNote;
+                                songNote.TimeLength = 0;
+                            }
+                            else
+                            {
+                                // No distinct information in the chord notes, but add any techniques they share
+                                songNote.Techniques |= notesToAdd[0].Techniques;
+                            }
+                        }
                     }
 
                     notes.Notes.Add(songNote);
