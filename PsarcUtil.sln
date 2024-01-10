@@ -93,6 +93,7 @@ Global
 		SolutionGuid = {42172109-188F-4319-A657-2BEBCFBDDCD0}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Dependencies\OpenSongChart\SongFormat\SongFormat.projitems*{00647335-ed1f-4a4c-9e63-a572d942340e}*SharedItemsImports = 5
 		Dependencies\OpenSongChart\SongFormat\SongFormat.projitems*{4610b529-50fc-4132-9484-a40ef3fbbf4a}*SharedItemsImports = 5
 		Dependencies\OpenSongChart\SongFormat\SongFormat.projitems*{595d9376-81d5-4163-9045-bd1d72a45b16}*SharedItemsImports = 13
 	EndGlobalSection

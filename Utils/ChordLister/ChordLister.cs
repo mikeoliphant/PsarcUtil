@@ -55,7 +55,7 @@ namespace ChordLister
                                             wroteSong = true;
                                         }
 
-                                        Console.WriteLine(chord.Name + "[" + note.ChordId + "/" + note.ChordNotesId + "]" + ((note.NoteFlags != 0) ? (" (" + (NoteMaskFlag)note.NoteFlags + ")") : ""));
+                                        Console.WriteLine(chord.Name + "[" + note.ChordId + "/" + note.ChordNotesId + "]" + ((note.NoteMask != 0) ? (" (" + (NoteMaskFlag)note.NoteMask + ")") : ""));
 
                                         for (int str = 0; str < 6; str++)
                                         {

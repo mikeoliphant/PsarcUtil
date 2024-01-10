@@ -14,7 +14,7 @@ using System.Collections;
 using System.Text.Json.Serialization.Metadata;
 using System.Reflection;
 
-namespace PsarcConverter
+namespace PsarcUtil
 {
     public class PsarcConverter
     {
@@ -138,22 +138,39 @@ namespace PsarcConverter
                                 }
                             }
 
-                            if (asset.Sections != null)
+                            if (asset.PhraseIterations != null)
                             {
-                                songStructure.Sections.Clear();
-
-                                foreach (Section section in asset.Sections)
+                                foreach (PhraseIteration it in asset.PhraseIterations)
                                 {
+                                    Phrase phrase = asset.Phrases[it.PhraseId];
+
                                     SongSection songSection = new SongSection
                                     {
-                                        Name = section.Name,
-                                        StartTime = section.StartTime,
-                                        EndTime = section.EndTime
+                                        Name = phrase.Name,
+                                        StartTime = it.StartTime,
+                                        EndTime = it.NextPhraseTime
                                     };
 
                                     partSections.Add(songSection);
                                 }
                             }
+
+                            //if (asset.Sections != null)
+                            //{
+                            //    songStructure.Sections.Clear();
+
+                            //    foreach (Section section in asset.Sections)
+                            //    {
+                            //        SongSection songSection = new SongSection
+                            //        {
+                            //            Name = section.Name,
+                            //            StartTime = section.StartTime,
+                            //            EndTime = section.EndTime
+                            //        };
+
+                            //        partSections.Add(songSection);
+                            //    }
+                            //}
 
                             SongInstrumentPart part = CreateInstrumentPart(songDir, arrangementName, partSections, arrangement, asset, decoder);
 
@@ -269,6 +286,8 @@ namespace PsarcConverter
                     notes.Chords.Add(songChord);
                 }
 
+                Note lastNote = new Note();
+
                 foreach (Note note in decoder.GetNotes(songAsset))
                 {
                     SongNote songNote = new SongNote()
@@ -282,7 +301,25 @@ namespace PsarcConverter
                         SlideFret = (sbyte)note.SlideTo,
                         ChordID = (sbyte)note.ChordId
                     };
-                    
+
+                    if (((NoteMaskFlag)note.NoteMask).HasFlag(NoteMaskFlag.ARPEGGIO))
+                    {
+                        if (note.ChordNotesId != -1)
+                        {
+
+                        }
+                    }
+
+                    //if (songNote.Techniques.HasFlag(ESongNoteTechnique.Continued))
+                    //{
+                    //    if ((lastNote.ChordId == -1) && ((sbyte)lastNote.SlideTo != note.FretId) && (lastNote.FretId != note.FretId))
+                    //    {
+
+                    //    }
+                    //}
+
+                    lastNote = note;
+
                     if (songNote.SlideFret <= 0)
                     {
                         songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
