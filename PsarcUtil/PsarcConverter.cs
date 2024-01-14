@@ -18,6 +18,8 @@ namespace PsarcUtil
 {
     public class PsarcConverter
     {
+        public Func<string, bool> UpdateAction { get; set; }
+
         string destPath;
         bool convertAudio = false;
 
@@ -64,7 +66,7 @@ namespace PsarcUtil
             this.convertAudio = convertAudio;
         }
 
-        public void ConvertFolder(string path)
+        public bool ConvertFolder(string path)
         {
             foreach (string psarcPath in Directory.GetFiles(path, "*.psarc"))
             {
@@ -74,11 +76,14 @@ namespace PsarcUtil
                     continue;
                 }
 
-                ConvertPsarc(psarcPath);
+                if (!ConvertPsarc(psarcPath))
+                    return false;
             }
+
+            return true;
         }
 
-        public void ConvertPsarc(string psarcPath)
+        public bool ConvertPsarc(string psarcPath)
         {
             PsarcDecoder decoder = new PsarcDecoder(psarcPath);
 
@@ -95,6 +100,14 @@ namespace PsarcUtil
                     ArtistName = songEntry.ArtistName,
                     AlbumName = songEntry.AlbumName,                    
                 };
+
+                if (UpdateAction != null)
+                {
+                    if (!UpdateAction(songEntry.ArtistName + " - " + songEntry.SongName))
+                    {
+                        return false;
+                    }
+                }
 
                 string artistDir = Path.Combine(destPath, GetSafeFilename(songData.ArtistName));
 
@@ -208,6 +221,8 @@ namespace PsarcUtil
                     }
                 }
             }
+
+            return true;
         }
 
         string GetSafeFilename(string path)
