@@ -478,6 +478,9 @@ namespace PsarcUtil
             if (noteMask.HasFlag(NoteMaskFlag.CHORD))
                 technique |= ESongNoteTechnique.Chord;
 
+            if (noteMask.HasFlag(NoteMaskFlag.ARPEGGIO))
+                technique |= ESongNoteTechnique.Arpeggio;
+
             if (noteMask.HasFlag(NoteMaskFlag.BEND))
                 technique |= ESongNoteTechnique.Bend;
 
