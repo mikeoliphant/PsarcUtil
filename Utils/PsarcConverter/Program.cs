@@ -9,7 +9,7 @@ namespace PsarcConverter
         {
             var converter = new PsarcUtil.PsarcConverter(@"C:\Share\JamSongs", convertAudio: false);
 
-            converter.ConvertPsarc(@"C:\Program Files (x86)\Steam\steamapps\common\Rocksmith2014\dlc\Counting-Crows_Round-Here_v2_p.psarc");
+            converter.ConvertPsarc(@"C:\Program Files (x86)\Steam\steamapps\common\Rocksmith2014\dlc\ZZ_Top_La_Grange_v1_p.psarc");
 
             //converter.ConvertPsarc(@"C:\Share\Rocksmith DLC\jimimanic_p.psarc");
 

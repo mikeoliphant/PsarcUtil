@@ -21,6 +21,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SongFormat", "Dependencies\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChordLister", "Utils\ChordLister\ChordLister.csproj", "{3D54DD4F-9570-4AEF-A5E6-98E6A1F89CEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsarcLister", "Utils\PsarcLister\PsarcLister.csproj", "{E900789A-3D69-4E53-9F26-B9D2A323929D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,14 @@ Global
 		{3D54DD4F-9570-4AEF-A5E6-98E6A1F89CEF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D54DD4F-9570-4AEF-A5E6-98E6A1F89CEF}.Release|x64.ActiveCfg = Release|Any CPU
 		{3D54DD4F-9570-4AEF-A5E6-98E6A1F89CEF}.Release|x64.Build.0 = Release|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E900789A-3D69-4E53-9F26-B9D2A323929D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +98,7 @@ Global
 		{4610B529-50FC-4132-9484-A40EF3FBBF4A} = {EF87697F-C9B5-43A9-91BC-5E8475F23516}
 		{595D9376-81D5-4163-9045-BD1D72A45B16} = {B3014891-46FB-4722-A4AC-43B3036E0768}
 		{3D54DD4F-9570-4AEF-A5E6-98E6A1F89CEF} = {EF87697F-C9B5-43A9-91BC-5E8475F23516}
+		{E900789A-3D69-4E53-9F26-B9D2A323929D} = {EF87697F-C9B5-43A9-91BC-5E8475F23516}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42172109-188F-4319-A657-2BEBCFBDDCD0}

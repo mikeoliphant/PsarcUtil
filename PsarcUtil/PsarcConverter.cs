@@ -13,6 +13,7 @@ using System.Linq;
 using System.Collections;
 using System.Text.Json.Serialization.Metadata;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace PsarcUtil
 {
@@ -180,7 +181,10 @@ namespace PsarcUtil
                                 songData.A440CentsOffset = arrangement.Attributes.CentOffset;
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+
+                    }
                 }
 
                 using (FileStream stream = File.Create(Path.Combine(songDir, "song.json")))
@@ -288,141 +292,185 @@ namespace PsarcUtil
 
                 Note lastNote = new Note();
 
-                foreach (Note note in decoder.GetNotes(songAsset))
+                foreach (var phrase in songAsset.PhraseIterations.Select((x, i) => new { x, i }))
                 {
-                    SongNote songNote = new SongNote()
+                    foreach (var arrange in songAsset.Arrangements.OrderByDescending(x => x.Difficulty))
                     {
-                        TimeOffset = note.Time,
-                        TimeLength = note.Sustain,
-                        Fret = (sbyte)note.FretId,
-                        String = (sbyte)note.StringIndex,
-                        Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
-                        HandFret = (sbyte)note.AnchorFretId,
-                        SlideFret = (sbyte)note.SlideTo,
-                        ChordID = (sbyte)note.ChordId
-                    };
+                        var phraseNotes = arrange.Notes.Where(x => x.PhraseIterationId == phrase.i).ToArray();
 
-                    if (((NoteMaskFlag)note.NoteMask).HasFlag(NoteMaskFlag.ARPEGGIO))
-                    {
-                        if (note.ChordNotesId != -1)
+                        int lastChordID = -1;
+
+                        if (phraseNotes.Length > 0)
                         {
-
-                        }
-                    }
-
-                    //if (songNote.Techniques.HasFlag(ESongNoteTechnique.Continued))
-                    //{
-                    //    if ((lastNote.ChordId == -1) && ((sbyte)lastNote.SlideTo != note.FretId) && (lastNote.FretId != note.FretId))
-                    //    {
-
-                    //    }
-                    //}
-
-                    lastNote = note;
-
-                    if (songNote.SlideFret <= 0)
-                    {
-                        songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
-                    }
-
-                    if ((note.BendData != null) && (note.BendData.Length > 0))
-                    {
-                        songNote.CentsOffsets = new CentsOffset[note.BendData.Length];
-
-                        for (int i = 0; i < note.BendData.Length; i++)
-                        {
-                            songNote.CentsOffsets[i] = new CentsOffset
+                            foreach (var note in phraseNotes)
                             {
-                                TimeOffset = note.BendData[i].Time,
-                                Cents = (int)(note.BendData[i].Step * 100)
-                            };
-                        };
-                    }
+                                int chordID = -1;
+                                float duration = 0;
 
-                    if (note.ChordNotesId != -1)
-                    {
-                        ChordNotes chordNotes = songAsset.ChordNotes[note.ChordNotesId];
-
-                        SongChord chord = notes.Chords[note.ChordId];
-
-                        List<SongNote> notesToAdd = new List<SongNote>();
-
-                        for (int str = 0; str < 6; str++)
-                        {
-                            //if ((chordNotes.BendData[str].UsedCount > 0) || (chordNotes.NoteMask[str] != 0) || (chordNotes.Vibrato[str] > 0) || (((sbyte)chordNotes.SlideTo[str]) != -1) || (((sbyte)chordNotes.SlideUnpitchTo[str]) != -1))
-                            if (chord.Frets[str] != -1)
-                            {
-                                SongNote chordNote = songNote;
-
-                                chordNote.String = str;
-                                chordNote.Fret = notes.Chords[songNote.ChordID].Frets[str];
-                                chordNote.ChordID = note.ChordId;
-                                chordNote.Techniques |= ESongNoteTechnique.ChordNote;
-
-                                if (chordNotes.BendData[str].UsedCount > 0)
+                                if (note.FingerPrintId[0] != -1)
                                 {
-                                    chordNote.CentsOffsets = new CentsOffset[chordNotes.BendData[str].UsedCount];
+                                    chordID = arrange.Fingerprints1[note.FingerPrintId[0]].ChordId;
+                                    duration = (arrange.Fingerprints1[note.FingerPrintId[0]].EndTime - arrange.Fingerprints1[note.FingerPrintId[0]].StartTime);
+                                }
 
-                                    for (int i = 0; i < chordNotes.BendData[str].UsedCount; i++)
+                                if (note.FingerPrintId[1] != -1)
+                                {
+                                    chordID = arrange.Fingerprints2[note.FingerPrintId[1]].ChordId;
+                                    duration = (arrange.Fingerprints2[note.FingerPrintId[1]].EndTime - arrange.Fingerprints2[note.FingerPrintId[1]].StartTime);
+                                }
+
+                                lastChordID = chordID;
+
+                                SongNote songNote = new SongNote()
+                                {
+                                    TimeOffset = note.Time,
+                                    TimeLength = note.Sustain,
+                                    Fret = (sbyte)note.FretId,
+                                    String = (sbyte)note.StringIndex,
+                                    Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
+                                    HandFret = (sbyte)note.AnchorFretId,
+                                    SlideFret = (sbyte)note.SlideTo,
+                                    ChordID = (sbyte)note.ChordId
+                                };
+
+                                if ((chordID != -1) && (chordID != songNote.ChordID))
+                                {
+                                    songNote.FingerID = chordID;
+
+                                    //if (lastChordID != chordID)
+                                    //{
+                                    //    note.NoteMask |= (uint)NoteMaskFlag.CHORD;
+                                    //    note.Sustain = duration;
+                                    //}
+                                }
+
+                                // Set chord flag on first note of arpeggiated section
+                                //if (((NoteMaskFlag)note.NoteMask).HasFlag(NoteMaskFlag.ARPEGGIO) && (!((NoteMaskFlag)lastNote.NoteMask).HasFlag(NoteMaskFlag.ARPEGGIO) || (lastNote.ChordId != note.ChordId)))
+                                //{
+                                //    songNote.Techniques |= ESongNoteTechnique.Chord;
+                                //}
+
+                                //if (songNote.Techniques.HasFlag(ESongNoteTechnique.Continued))
+                                //{
+                                //    if ((lastNote.ChordId == -1) && ((sbyte)lastNote.SlideTo != note.FretId) && (lastNote.FretId != note.FretId))
+                                //    {
+
+                                //    }
+                                //}
+
+                                lastNote = note;
+
+                                if (songNote.SlideFret <= 0)
+                                {
+                                    songNote.SlideFret = (sbyte)note.SlideUnpitchTo;
+                                }
+
+                                if ((note.BendData != null) && (note.BendData.Length > 0))
+                                {
+                                    songNote.CentsOffsets = new CentsOffset[note.BendData.Length];
+
+                                    for (int i = 0; i < note.BendData.Length; i++)
                                     {
-                                        chordNote.CentsOffsets[i] = new CentsOffset()
+                                        songNote.CentsOffsets[i] = new CentsOffset
                                         {
-                                            TimeOffset = chordNotes.BendData[str].BendData32[i].Time,
-                                            Cents = (int)(chordNotes.BendData[str].BendData32[i].Step * 100)
+                                            TimeOffset = note.BendData[i].Time,
+                                            Cents = (int)(note.BendData[i].Step * 100)
                                         };
+                                    };
+                                }
+
+                                if (note.ChordNotesId != -1)
+                                {
+                                    ChordNotes chordNotes = songAsset.ChordNotes[note.ChordNotesId];
+
+                                    SongChord chord = notes.Chords[note.ChordId];
+
+                                    List<SongNote> notesToAdd = new List<SongNote>();
+
+                                    for (int str = 0; str < 6; str++)
+                                    {
+                                        //if ((chordNotes.BendData[str].UsedCount > 0) || (chordNotes.NoteMask[str] != 0) || (chordNotes.Vibrato[str] > 0) || (((sbyte)chordNotes.SlideTo[str]) != -1) || (((sbyte)chordNotes.SlideUnpitchTo[str]) != -1))
+                                        if (chord.Frets[str] != -1)
+                                        {
+                                            SongNote chordNote = songNote;
+
+                                            chordNote.String = str;
+                                            chordNote.Fret = notes.Chords[songNote.ChordID].Frets[str];
+                                            chordNote.ChordID = note.ChordId;
+                                            chordNote.FingerID = songNote.FingerID;
+
+                                            if (chordNotes.BendData[str].UsedCount > 0)
+                                            {
+                                                chordNote.CentsOffsets = new CentsOffset[chordNotes.BendData[str].UsedCount];
+
+                                                for (int i = 0; i < chordNotes.BendData[str].UsedCount; i++)
+                                                {
+                                                    chordNote.CentsOffsets[i] = new CentsOffset()
+                                                    {
+                                                        TimeOffset = chordNotes.BendData[str].BendData32[i].Time,
+                                                        Cents = (int)(chordNotes.BendData[str].BendData32[i].Step * 100)
+                                                    };
+                                                }
+                                            }
+
+                                            chordNote.Techniques = ConvertTechniques((NoteMaskFlag)chordNotes.NoteMask[str]);
+                                            chordNote.Techniques |= ESongNoteTechnique.ChordNote;
+                                            chordNote.SlideFret = (sbyte)chordNotes.SlideTo[str];
+
+                                            if (chordNote.SlideFret <= 0)
+                                            {
+                                                chordNote.SlideFret = (sbyte)chordNotes.SlideUnpitchTo[str];
+                                            }
+
+                                            notesToAdd.Add(chordNote);
+                                        }
+                                    }
+
+                                    if (notesToAdd.Count > 0)
+                                    {
+                                        bool haveNotes = false;
+
+                                        for (int i = 0; i < notesToAdd.Count; i++)
+                                        {
+                                            if ((notesToAdd[i].Techniques != notesToAdd[0].Techniques) || (notesToAdd[i].SlideFret != -1) || (notesToAdd[i].CentsOffsets != null))
+                                            {
+                                                haveNotes = true;
+
+                                                break;
+                                            }
+                                        }
+
+                                        if (haveNotes)
+                                        {
+                                            foreach (SongNote toAdd in notesToAdd)
+                                            {
+                                                notes.Notes.Add(toAdd);
+                                            }
+
+                                            songNote.Techniques |= ESongNoteTechnique.ChordNote;
+                                            songNote.TimeLength = 0;
+                                        }
+                                        else
+                                        {
+                                            // No distinct information in the chord notes, but add any techniques they share
+                                            songNote.Techniques |= notesToAdd[0].Techniques;
+                                            // Except ChordNote
+                                            songNote.Techniques &= ~ESongNoteTechnique.ChordNote;
+                                        }
                                     }
                                 }
 
-                                chordNote.Techniques = ConvertTechniques((NoteMaskFlag)chordNotes.NoteMask[str]);
-                                chordNote.SlideFret = (sbyte)chordNotes.SlideTo[str];
-
-                                if (chordNote.SlideFret <= 0)
-                                {
-                                    chordNote.SlideFret = (sbyte)chordNotes.SlideUnpitchTo[str];
-                                }
-
-                                notesToAdd.Add(chordNote);
+                                notes.Notes.Add(songNote);
                             }
-                        }
 
-                        if (notesToAdd.Count > 0)
-                        {
-                            bool haveNotes = false;
-
-                            for (int i = 0; i < notesToAdd.Count; i++)
+                            using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
                             {
-                                if ((notesToAdd[i].Techniques != notesToAdd[0].Techniques) || (notesToAdd[i].SlideFret != -1) || (notesToAdd[i].CentsOffsets != null))
-                                {
-                                    haveNotes = true;
-
-                                    break;
-                                }
+                                JsonSerializer.Serialize(stream, notes, condensedSerializerOptions);
                             }
 
-                            if (haveNotes)
-                            {
-                                foreach (SongNote toAdd in notesToAdd)
-                                {
-                                    notes.Notes.Add(toAdd);
-                                }
-
-                                songNote.Techniques |= ESongNoteTechnique.ChordNote;
-                                songNote.TimeLength = 0;
-                            }
-                            else
-                            {
-                                // No distinct information in the chord notes, but add any techniques they share
-                                songNote.Techniques |= notesToAdd[0].Techniques;
-                            }
+                            break;
                         }
                     }
-
-                    notes.Notes.Add(songNote);
-                }
-
-                using (FileStream stream = File.Create(Path.Combine(songDir, partName + ".json")))
-                {
-                    JsonSerializer.Serialize(stream, notes, condensedSerializerOptions);
                 }
             }
 

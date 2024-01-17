@@ -107,10 +107,45 @@ namespace PsarcUtil
             {
                 foreach (var arr in song.Arrangements.OrderByDescending(x => x.Difficulty))
                 {
-                    var phrNotes = arr.Notes.Where(x => x.PhraseIterationId == phr.i);
-                    if (phrNotes.Any())
+                    var phrNotes = arr.Notes.Where(x => x.PhraseIterationId == phr.i).ToArray();
+
+                    int lastChordID = -1;
+
+                    if (phrNotes.Length > 0)
                     {
+                        for (int i = 0; i < phrNotes.Length;i++)
+                        {
+                            int chordID = -1;
+                            float duration = 0;
+
+                            if (phrNotes[i].FingerPrintId[0] != -1)
+                            {
+                                chordID = arr.Fingerprints1[phrNotes[i].FingerPrintId[0]].ChordId;
+                                duration = (arr.Fingerprints1[phrNotes[i].FingerPrintId[0]].EndTime - arr.Fingerprints1[phrNotes[i].FingerPrintId[0]].StartTime);
+                            }
+
+                            if (phrNotes[i].FingerPrintId[1] != -1)
+                            {
+                                chordID = arr.Fingerprints2[phrNotes[i].FingerPrintId[1]].ChordId;
+                                duration = (arr.Fingerprints2[phrNotes[i].FingerPrintId[1]].EndTime - arr.Fingerprints2[phrNotes[i].FingerPrintId[1]].StartTime);
+                            }
+
+                            if (chordID != -1)
+                            {
+                                phrNotes[i].ChordId = chordID;
+
+                                if ((i == 0) || (lastChordID != chordID))
+                                {
+                                    phrNotes[i].NoteMask |= (uint)NoteMaskFlag.CHORD;
+                                    phrNotes[i].Sustain = duration;
+                                }
+                            }
+
+                            lastChordID = chordID;
+                        }
+
                         allNotes.AddRange(phrNotes);
+
                         break;
                     }
                 }
