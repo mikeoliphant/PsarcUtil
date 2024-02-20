@@ -210,9 +210,11 @@ namespace PsarcUtil
                     JsonSerializer.Serialize(stream, songStructure, indentedSerializerOptions);
                 }
 
-                if (convertAudio)
+                string audioFile = Path.Combine(songDir, "song.ogg");
+
+                if (convertAudio || !File.Exists(audioFile))
                 {
-                    using (Stream outputStream = File.Create(Path.Combine(songDir, "song.ogg")))
+                    using (Stream outputStream = File.Create(audioFile))
                     {
                         TextWriter consoleOut = Console.Out;
 
