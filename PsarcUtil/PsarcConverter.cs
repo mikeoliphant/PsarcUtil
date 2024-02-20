@@ -289,6 +289,8 @@ namespace PsarcUtil
                     };
                 }
 
+                part.CapoFret = (int)arrangement.Attributes.CapoFret;
+
                 SongInstrumentNotes notes = new SongInstrumentNotes();
 
                 notes.Sections = partSections;
