@@ -77,8 +77,12 @@ namespace PsarcUtil
                     continue;
                 }
 
-                if (!ConvertPsarc(psarcPath))
-                    return false;
+                try
+                {
+                    if (!ConvertPsarc(psarcPath))
+                        return false;
+                }
+                catch { }
             }
 
             return true;
