@@ -214,6 +214,15 @@ namespace PsarcUtil
                     JsonSerializer.Serialize(stream, songStructure, indentedSerializerOptions);
                 }
 
+                DdsAsset albumArt = decoder.GetAlbumArtAsset(songEntry.SongKey, 256);
+
+                if (albumArt != null)
+                {
+                    string albumPath = Path.Combine(songDir, "albumart.png");
+
+                    albumArt.Bitmap.Save(albumPath, System.Drawing.Imaging.ImageFormat.Png);
+                }
+
                 string audioFile = Path.Combine(songDir, "song.ogg");
 
                 if (convertAudio || !File.Exists(audioFile))

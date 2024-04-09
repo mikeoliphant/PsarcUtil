@@ -97,6 +97,27 @@ namespace PsarcUtil
             return song;
         }
 
+        public DdsAsset GetAlbumArtAsset(string songKey, int size)
+        {
+            string tocName = "album_" + songKey.ToLower() + "_" + size + ".dds";
+
+            PsarcTOCEntry tocEntry = GetTOCEntry(tocName);
+
+            if (tocEntry == null)
+                return null;
+
+            DdsAsset dds = new();
+
+            using (MemoryStream memStream = new MemoryStream())
+            {
+                psarcFile.InflateEntry(tocEntry, memStream);
+
+                dds.ReadFrom(memStream);
+            }
+
+            return dds;
+        }
+
         public List<Note> GetNotes(SngAsset song)
         {
             var allNotes = new List<Note>();
