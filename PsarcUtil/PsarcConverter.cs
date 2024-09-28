@@ -14,6 +14,7 @@ using System.Collections;
 using System.Text.Json.Serialization.Metadata;
 using System.Reflection;
 using System.Xml.Linq;
+using Rocksmith2014PsarcLib.Psarc;
 
 namespace PsarcUtil
 {
@@ -223,20 +224,25 @@ namespace PsarcUtil
                     albumArt.Bitmap.Save(albumPath, System.Drawing.Imaging.ImageFormat.Png);
                 }
 
-                string audioFile = Path.Combine(songDir, "song.ogg");
+                PsarcTOCEntry bankEntry = decoder.GetTOCEntry(songEntry.SongBank);
 
-                if (convertAudio || !File.Exists(audioFile))
+                if (bankEntry != null)
                 {
-                    using (Stream outputStream = File.Create(audioFile))
+                    string audioFile = Path.Combine(songDir, "song.ogg");
+
+                    if (convertAudio || !File.Exists(audioFile))
                     {
-                        TextWriter consoleOut = Console.Out;
+                        using (Stream outputStream = File.Create(audioFile))
+                        {
+                            TextWriter consoleOut = Console.Out;
 
-                        // Suppress Ww2ogg logging
-                        Console.SetOut(TextWriter.Null);
+                            // Suppress Ww2ogg logging
+                            Console.SetOut(TextWriter.Null);
 
-                        decoder.WriteOgg(songEntry.SongKey, outputStream);
+                            decoder.WriteOgg(songEntry.SongKey, outputStream);
 
-                        Console.SetOut(consoleOut);
+                            Console.SetOut(consoleOut);
+                        }
                     }
                 }
             }
