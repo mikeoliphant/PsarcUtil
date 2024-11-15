@@ -201,7 +201,7 @@ namespace PsarcUtil
                     }
                     catch (Exception ex)
                     {
-
+                        Console.WriteLine("Error: " + ex.ToString());
                     }
                 }
 
@@ -215,16 +215,25 @@ namespace PsarcUtil
                     JsonSerializer.Serialize(stream, songStructure, indentedSerializerOptions);
                 }
 
-                DdsAsset albumArt = decoder.GetAlbumArtAsset(songEntry.SongKey, 256);
-
-                if (albumArt != null)
+                try
                 {
-                    string albumPath = Path.Combine(songDir, "albumart.png");
+                    DdsAsset albumArt = decoder.GetAlbumArtAsset(songEntry.SongKey, 256);
 
-                    albumArt.Bitmap.Save(albumPath, System.Drawing.Imaging.ImageFormat.Png);
+                    if (albumArt != null)
+                    {
+                        string albumPath = Path.Combine(songDir, "albumart.png");
+
+                        albumArt.Bitmap.Save(albumPath, System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error createing album art: " + ex.ToString());
                 }
 
                 PsarcTOCEntry bankEntry = decoder.GetTOCEntry(songEntry.SongBank);
+
+                TextWriter consoleOut = Console.Out;
 
                 if (bankEntry != null)
                 {
@@ -232,16 +241,23 @@ namespace PsarcUtil
 
                     if (convertAudio || !File.Exists(audioFile))
                     {
-                        using (Stream outputStream = File.Create(audioFile))
+                        try
                         {
-                            TextWriter consoleOut = Console.Out;
+                            using (Stream outputStream = File.Create(audioFile))
+                            {
+                                // Suppress Ww2ogg logging
+                                Console.SetOut(TextWriter.Null);
 
-                            // Suppress Ww2ogg logging
-                            Console.SetOut(TextWriter.Null);
+                                decoder.WriteOgg(songEntry.SongKey, outputStream);
 
-                            decoder.WriteOgg(songEntry.SongKey, outputStream);
-
+                                Console.SetOut(consoleOut);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
                             Console.SetOut(consoleOut);
+
+                            Console.WriteLine("Failed to create audio [" + audioFile + "] - " + ex.ToString());
                         }
                     }
                 }

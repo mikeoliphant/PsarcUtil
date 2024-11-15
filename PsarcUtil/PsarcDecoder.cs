@@ -189,6 +189,8 @@ namespace PsarcUtil
             return new VorbisReader(revorbStream, true);
         }
 
+        static string CodebookPath = Path.Combine("Ww2ogg", "Codebooks", "packed_codebooks_aoTuV_603.bin");
+
         public void WriteOgg(string songKey, Stream outputStream)
         {
             PsarcSongEntry songEntry = songDict[songKey];
@@ -215,7 +217,8 @@ namespace PsarcUtil
 
                     BinaryWriter oggWriter = new BinaryWriter(oggStream);
 
-                    Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Ww2ogg\\Codebooks\\packed_codebooks_aoTuV_603.bin"), false, false, ForcePacketFormat.NoForcePacketFormat);
+                    Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]),
+                        CodebookPath), false, false, ForcePacketFormat.NoForcePacketFormat);
 
                     ww.GenerateOgg(oggWriter);
                 }
