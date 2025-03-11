@@ -24,7 +24,7 @@ namespace PsarcUtil
 
         string destPath;
         bool convertAudio = false;
-
+        
         JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions()
         {
             Converters ={
@@ -72,12 +72,6 @@ namespace PsarcUtil
         {
             foreach (string psarcPath in Directory.GetFiles(path, "*.psarc"))
             {
-                // This file has song entries, but no audio
-                if (Path.GetFileName(psarcPath) == "rs1compatibilitydlc_p.psarc")
-                {
-                    continue;
-                }
-
                 try
                 {
                     if (!ConvertPsarc(psarcPath))
@@ -92,6 +86,11 @@ namespace PsarcUtil
         public bool ConvertPsarc(string psarcPath)
         {
             PsarcDecoder decoder = new PsarcDecoder(psarcPath);
+
+            // This file has song entries, but audio exists in songs.psarc, which should be one directory up
+            PsarcDecoder? songsPsarcDecoder = (Path.GetFileName(psarcPath) == "rs1compatibilitydlc_p.psarc")
+                ? new PsarcDecoder(Path.Combine(Path.GetDirectoryName(psarcPath), "..", "songs.psarc"))
+                : null;
 
             if (!Directory.Exists(destPath))
             {
@@ -231,7 +230,9 @@ namespace PsarcUtil
                     Console.WriteLine("Error createing album art: " + ex.ToString());
                 }
 
-                PsarcTOCEntry bankEntry = decoder.GetTOCEntry(songEntry.SongBank);
+                PsarcTOCEntry bankEntry = songsPsarcDecoder == null
+                    ? decoder.GetTOCEntry(songEntry.SongBank)
+                    : songsPsarcDecoder.GetTOCEntry(songEntry.SongBank);
 
                 TextWriter consoleOut = Console.Out;
 
@@ -248,7 +249,11 @@ namespace PsarcUtil
                                 // Suppress Ww2ogg logging
                                 Console.SetOut(TextWriter.Null);
 
-                                decoder.WriteOgg(songEntry.SongKey, outputStream);
+                                if (songsPsarcDecoder == null) {
+                                    decoder.WriteOgg(songEntry.SongKey, outputStream, bankEntry);
+                                } else {
+                                    songsPsarcDecoder.WriteOgg(songEntry.SongKey, outputStream, bankEntry);
+                                }
 
                                 Console.SetOut(consoleOut);
                             }
@@ -384,7 +389,7 @@ namespace PsarcUtil
                                     Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
                                     HandFret = (sbyte)note.AnchorFretId,
                                     SlideFret = (sbyte)note.SlideTo,
-                                    ChordID = (sbyte)note.ChordId
+                                    ChordID = note.ChordId
                                 };
 
                                 if ((chordID != -1) && (chordID != songNote.ChordID))
