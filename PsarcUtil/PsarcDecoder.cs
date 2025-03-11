@@ -191,14 +191,16 @@ namespace PsarcUtil
 
         static string CodebookPath = Path.Combine("Ww2ogg", "Codebooks", "packed_codebooks_aoTuV_603.bin");
 
-        public void WriteOgg(string songKey, Stream outputStream)
+        public void WriteOgg(string songKey, Stream outputStream, PsarcTOCEntry? bankEntry = null)
         {
-            PsarcSongEntry songEntry = songDict[songKey];
+            if (bankEntry == null) {
+                PsarcSongEntry songEntry = songDict[songKey];
 
-            PsarcTOCEntry bankEntry = GetTOCEntry(songEntry.SongBank);
+                bankEntry = GetTOCEntry(songEntry.SongBank);
 
-            if (bankEntry == null)
-                throw new InvalidOperationException("Song key [" + songKey + "] has no song bank entry");
+                if (bankEntry == null)
+                    throw new InvalidOperationException("Song key [" + songKey + "] has no song bank entry");
+            }
 
             BkhdAsset bank = psarcFile.InflateEntry<BkhdAsset>(bankEntry);
 
