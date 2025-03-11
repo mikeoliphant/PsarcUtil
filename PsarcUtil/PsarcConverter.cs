@@ -384,7 +384,7 @@ namespace PsarcUtil
                                     Techniques = ConvertTechniques((NoteMaskFlag)note.NoteMask),
                                     HandFret = (sbyte)note.AnchorFretId,
                                     SlideFret = (sbyte)note.SlideTo,
-                                    ChordID = (sbyte)note.ChordId
+                                    ChordID = note.ChordId
                                 };
 
                                 if ((chordID != -1) && (chordID != songNote.ChordID))
