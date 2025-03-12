@@ -87,10 +87,13 @@ namespace PsarcUtil
         {
             PsarcDecoder decoder = new PsarcDecoder(psarcPath);
 
+            PsarcDecoder songsDecoder = decoder;
+
             // This file has song entries, but audio exists in songs.psarc, which should be one directory up
-            PsarcDecoder? songsPsarcDecoder = (Path.GetFileName(psarcPath) == "rs1compatibilitydlc_p.psarc")
-                ? new PsarcDecoder(Path.Combine(Path.GetDirectoryName(psarcPath), "..", "songs.psarc"))
-                : null;
+            if (Path.GetFileName(psarcPath) == "rs1compatibilitydlc_p.psarc")
+            {
+                songsDecoder = new PsarcDecoder(Path.Combine(Path.GetDirectoryName(psarcPath), "..", "songs.psarc"));
+            }
 
             if (!Directory.Exists(destPath))
             {
@@ -230,9 +233,7 @@ namespace PsarcUtil
                     Console.WriteLine("Error createing album art: " + ex.ToString());
                 }
 
-                PsarcTOCEntry bankEntry = songsPsarcDecoder == null
-                    ? decoder.GetTOCEntry(songEntry.SongBank)
-                    : songsPsarcDecoder.GetTOCEntry(songEntry.SongBank);
+                PsarcTOCEntry bankEntry = songsDecoder.GetTOCEntry(songEntry.SongBank);
 
                 TextWriter consoleOut = Console.Out;
 
@@ -249,11 +250,7 @@ namespace PsarcUtil
                                 // Suppress Ww2ogg logging
                                 Console.SetOut(TextWriter.Null);
 
-                                if (songsPsarcDecoder == null) {
-                                    decoder.WriteOgg(songEntry.SongKey, outputStream, bankEntry);
-                                } else {
-                                    songsPsarcDecoder.WriteOgg(songEntry.SongKey, outputStream, bankEntry);
-                                }
+                                songsDecoder.WriteOgg(songEntry.SongKey, outputStream, bankEntry);
 
                                 Console.SetOut(consoleOut);
                             }
