@@ -21,13 +21,14 @@ namespace PsarcUtil
     public class PsarcConverter
     {
         public Func<string, bool> UpdateAction { get; set; }
+        public bool OverwriteAudio { get; set; } = false;
+        public bool OverwriteData { get; set; } = true;
 
         string destPath;
-        bool convertAudio = false;
         
         JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions()
         {
-            Converters ={
+            Converters = {
                new JsonStringEnumConverter()
             },
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
@@ -40,7 +41,7 @@ namespace PsarcUtil
 
         JsonSerializerOptions condensedSerializerOptions = new JsonSerializerOptions()
         {
-            Converters ={
+            Converters = {
                new JsonStringEnumConverter()
             },
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
@@ -62,10 +63,9 @@ namespace PsarcUtil
                 }
         }
 
-        public PsarcConverter(string destPath, bool convertAudio)
+        public PsarcConverter(string destPath)
         {
             this.destPath = destPath;
-            this.convertAudio = convertAudio;
         }
 
         public bool ConvertFolder(string path)
@@ -131,6 +131,11 @@ namespace PsarcUtil
                 if (!Directory.Exists(songDir))
                 {
                     Directory.CreateDirectory(songDir);
+                }
+                else
+                {
+                    if (!OverwriteData)
+                        continue;
                 }
 
                 SongStructure songStructure = new SongStructure();
@@ -243,7 +248,7 @@ namespace PsarcUtil
                 {
                     string audioFile = Path.Combine(songDir, "song.ogg");
 
-                    if (convertAudio || !File.Exists(audioFile))
+                    if (OverwriteAudio || !File.Exists(audioFile))
                     {
                         try
                         {
