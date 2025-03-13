@@ -18,9 +18,16 @@ using Rocksmith2014PsarcLib.Psarc;
 
 namespace PsarcUtil
 {
+    public enum EConvertOption
+    {
+        Continue,
+        Skip,
+        Abort
+    }
+
     public class PsarcConverter
     {
-        public Func<string, bool> UpdateAction { get; set; }
+        public Func<string, string, string, EConvertOption> UpdateAction { get; set; }
         public bool OverwriteAudio { get; set; } = false;
         public bool OverwriteData { get; set; } = true;
 
@@ -111,14 +118,6 @@ namespace PsarcUtil
                     AlbumName = songEntry.AlbumName,
                 };
 
-                if (UpdateAction != null)
-                {
-                    if (!UpdateAction(songEntry.ArtistName + " - " + songEntry.SongName))
-                    {
-                        return false;
-                    }
-                }
-
                 string artistDir = Path.Combine(destPath, GetSafeFilename(songData.ArtistName));
 
                 if (!Directory.Exists(artistDir))
@@ -127,6 +126,17 @@ namespace PsarcUtil
                 }
 
                 string songDir = Path.Combine(artistDir, GetSafeFilename(songData.SongName));
+
+                if (UpdateAction != null)
+                {
+                    var convertOption = UpdateAction(songData.ArtistName, songData.SongName, songDir);
+
+                    if (convertOption == EConvertOption.Abort)
+                        return false;
+
+                    if (convertOption == EConvertOption.Skip)
+                        continue;
+                }
 
                 if (!Directory.Exists(songDir))
                 {
