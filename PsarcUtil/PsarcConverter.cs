@@ -105,8 +105,10 @@ namespace PsarcUtil
                 SongData songData = new SongData()
                 {
                     SongName = songEntry.SongName,
+                    SongYear = songEntry.SongYear,
+                    SongLengthSeconds = songEntry.SongLengthSeconds,
                     ArtistName = songEntry.ArtistName,
-                    AlbumName = songEntry.AlbumName,                    
+                    AlbumName = songEntry.AlbumName,
                 };
 
                 if (UpdateAction != null)

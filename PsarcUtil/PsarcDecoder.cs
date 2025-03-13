@@ -254,6 +254,8 @@ namespace PsarcUtil
             if (string.IsNullOrEmpty(songEntry.SongName))
             {
                 songEntry.SongName = arrangement.Attributes.SongName;
+                songEntry.SongYear = arrangement.Attributes.SongYear;
+                songEntry.SongLengthSeconds = arrangement.Attributes.SongLength;
                 songEntry.ArtistName = arrangement.Attributes.ArtistName;
                 songEntry.AlbumName = arrangement.Attributes.AlbumName;
                 songEntry.SongBank = arrangement.Attributes.SongBank;
@@ -269,6 +271,8 @@ namespace PsarcUtil
     {
         public string SongKey { get; set; }
         public string SongName { get; set; }
+        public int SongYear { get; set; }
+        public float SongLengthSeconds { get; set; }
         public string ArtistName { get; set; }
         public string AlbumName { get; set; }
         public string SongBank { get; set; }
