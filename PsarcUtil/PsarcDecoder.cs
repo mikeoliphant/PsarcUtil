@@ -25,9 +25,9 @@ namespace PsarcUtil
             get { return songDict.Values; }
         }
 
-        public PsarcDecoder(string psarcPath)
+        public PsarcDecoder(Stream psarcStream)
         {
-            psarcFile = new PsarcFile(psarcPath);
+            psarcFile = new PsarcFile(psarcStream);
 
             foreach (var toc in psarcFile.TOC.Entries)
             {
@@ -40,6 +40,10 @@ namespace PsarcUtil
                     AddArrangement(toc);
                 }
             }
+        }
+
+        public PsarcDecoder(string psarcPath) : this(File.OpenRead(psarcPath))
+        {
         }
 
         public void ExtractAll(string destPath)
