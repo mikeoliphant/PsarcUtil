@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using Rocksmith2014PsarcLib.Psarc;
 using Rocksmith2014PsarcLib.Psarc.Asset;
@@ -233,6 +234,69 @@ namespace PsarcUtil
 
                 RevorbSharp.Convert(oggStream, outputStream);
             }
+        }
+
+        static byte[] embeddedCodebook;
+
+        // Loads the same codebook data as WriteOgg's CodebookPath, but from an embedded
+        // resource instead of the filesystem - browser-wasm has no working directory to
+        // resolve CodebookPath against.
+        static byte[] GetEmbeddedCodebook()
+        {
+            if (embeddedCodebook == null)
+            {
+                Assembly assembly = typeof(Wwise_RIFF_Vorbis).Assembly;
+                string resourceName = assembly.GetManifestResourceNames()
+                    .First(name => name.EndsWith("packed_codebooks_aoTuV_603.bin"));
+
+                using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                using MemoryStream memStream = new MemoryStream();
+                resourceStream.CopyTo(memStream);
+                embeddedCodebook = memStream.ToArray();
+            }
+
+            return embeddedCodebook;
+        }
+
+        // Same as WriteOgg, but returns the raw bytes and skips RevorbSharp.Convert - the
+        // granule positions Wwise_RIFF_Vorbis.GenerateOgg computes are already accurate, and
+        // RevorbSharp needs native ogg.dll/vorbis.dll (via OggVorbisSharp), which browser-wasm
+        // can't load.
+        public byte[] GetOggBytes(string songKey, PsarcTOCEntry? bankEntry = null)
+        {
+            if (bankEntry == null)
+            {
+                PsarcSongEntry songEntry = songDict[songKey];
+
+                bankEntry = GetTOCEntry(songEntry.SongBank);
+
+                if (bankEntry == null)
+                    throw new InvalidOperationException("Song key [" + songKey + "] has no song bank entry");
+            }
+
+            BkhdAsset bank = psarcFile.InflateEntry<BkhdAsset>(bankEntry);
+
+            uint wemID = bank.GetWemId();
+
+            PsarcTOCEntry wemEntry = GetTOCEntry(wemID + ".wem");
+
+            if (wemEntry == null)
+                throw new InvalidOperationException("Song key [" + songKey + "] has no wem file");
+
+            using MemoryStream oggStream = new MemoryStream();
+
+            using (MemoryStream inflateStream = new MemoryStream())
+            {
+                psarcFile.InflateEntry(wemEntry, inflateStream);
+
+                BinaryWriter oggWriter = new BinaryWriter(oggStream);
+
+                Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, GetEmbeddedCodebook(), false, false, ForcePacketFormat.NoForcePacketFormat);
+
+                ww.GenerateOgg(oggWriter);
+            }
+
+            return oggStream.ToArray();
         }
 
         void AddArrangement(PsarcTOCEntry toc)
