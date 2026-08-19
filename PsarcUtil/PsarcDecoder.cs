@@ -122,6 +122,26 @@ namespace PsarcUtil
             return dds;
         }
 
+        // Same TOC lookup + inflate as GetAlbumArtAsset, but stops short of DdsAsset.ReadFrom
+        // (which pulls in Pfim + System.Drawing to decode/wrap the DDS). Callers that can't
+        // depend on System.Drawing (e.g. browser-wasm) decode these raw bytes themselves.
+        public byte[] GetAlbumArtBytes(string songKey, int size)
+        {
+            string tocName = "album_" + songKey.ToLower() + "_" + size + ".dds";
+
+            PsarcTOCEntry tocEntry = GetTOCEntry(tocName);
+
+            if (tocEntry == null)
+                return null;
+
+            using (MemoryStream memStream = new MemoryStream())
+            {
+                psarcFile.InflateEntry(tocEntry, memStream);
+
+                return memStream.ToArray();
+            }
+        }
+
         public List<Note> GetNotes(SngAsset song)
         {
             var allNotes = new List<Note>();
