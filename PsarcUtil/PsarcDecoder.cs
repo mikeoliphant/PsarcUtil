@@ -122,9 +122,9 @@ namespace PsarcUtil
             return dds;
         }
 
-        // Same TOC lookup + inflate as GetAlbumArtAsset, but stops short of DdsAsset.ReadFrom
-        // (which pulls in Pfim + System.Drawing to decode/wrap the DDS). Callers that can't
-        // depend on System.Drawing (e.g. browser-wasm) decode these raw bytes themselves.
+        // Same TOC lookup + inflate as GetAlbumArtAsset, but stops short of DdsAsset.ReadFrom,
+        // which wraps the decoded pixels in a System.Drawing Bitmap (GDI+, unsupported on
+        // browser-wasm). Callers decode these raw DDS bytes themselves, e.g. via Pfim directly.
         public byte[] GetAlbumArtBytes(string songKey, int size)
         {
             string tocName = "album_" + songKey.ToLower() + "_" + size + ".dds";
