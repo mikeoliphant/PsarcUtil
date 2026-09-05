@@ -258,9 +258,8 @@ namespace PsarcUtil
 
         static byte[] embeddedCodebook;
 
-        // Loads the same codebook data as WriteOgg's CodebookPath, but from an embedded
-        // resource instead of the filesystem - browser-wasm has no working directory to
-        // resolve CodebookPath against.
+        // Loads the codebook from an embedded resource instead of WriteOgg()'s file path.
+        // For callers that can't resolve paths relative to a working directory.
         static byte[] GetEmbeddedCodebook()
         {
             if (embeddedCodebook == null)
@@ -278,10 +277,8 @@ namespace PsarcUtil
             return embeddedCodebook;
         }
 
-        // Same as WriteOgg, but returns the raw bytes and skips RevorbSharp.Convert - the
-        // granule positions Wwise_RIFF_Vorbis.GenerateOgg computes are already accurate, and
-        // RevorbSharp needs native ogg.dll/vorbis.dll (via OggVorbisSharp), which browser-wasm
-        // can't load.
+        // Similar to WriteOgg(), but returns raw bytes and skips RevorbSharp.Convert().
+        // Caller then needs to write bytes to an ogg file manually
         public byte[] GetOggBytes(string songKey, PsarcTOCEntry? bankEntry = null)
         {
             if (bankEntry == null)
