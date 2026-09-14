@@ -214,72 +214,9 @@ namespace PsarcUtil
             return new VorbisReader(revorbStream, true);
         }
 
-        static string CodebookPath = Path.Combine("Ww2ogg", "Codebooks", "packed_codebooks_aoTuV_603.bin");
+        static string CodebookName = "packed_codebooks_aoTuV_603.bin";
 
         public void WriteOgg(string songKey, Stream outputStream, PsarcTOCEntry? bankEntry = null)
-        {
-            if (bankEntry == null) {
-                PsarcSongEntry songEntry = songDict[songKey];
-
-                bankEntry = GetTOCEntry(songEntry.SongBank);
-
-                if (bankEntry == null)
-                    throw new InvalidOperationException("Song key [" + songKey + "] has no song bank entry");
-            }
-
-            BkhdAsset bank = psarcFile.InflateEntry<BkhdAsset>(bankEntry);
-
-            uint wemID = bank.GetWemId();
-
-            PsarcTOCEntry wemEntry = GetTOCEntry(wemID + ".wem");
-
-            if (wemEntry == null)
-                throw new InvalidOperationException("Song key [" + songKey + "] has no wem file");
-
-            using (MemoryStream oggStream = new MemoryStream())
-            {
-                using (MemoryStream inflateStream = new MemoryStream())
-                {
-                    psarcFile.InflateEntry(wemEntry, inflateStream);
-
-                    BinaryWriter oggWriter = new BinaryWriter(oggStream);
-
-                    Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]),
-                        CodebookPath), false, false, ForcePacketFormat.NoForcePacketFormat);
-
-                    ww.GenerateOgg(oggWriter);
-                }
-
-                oggStream.Seek(0, SeekOrigin.Begin);
-
-                RevorbSharp.Convert(oggStream, outputStream);
-            }
-        }
-
-        static byte[] embeddedCodebook;
-
-        // Loads the codebook from an embedded resource instead of WriteOgg()'s file path.
-        // For callers that can't resolve paths relative to a working directory.
-        static byte[] GetEmbeddedCodebook()
-        {
-            if (embeddedCodebook == null)
-            {
-                Assembly assembly = typeof(Wwise_RIFF_Vorbis).Assembly;
-                string resourceName = assembly.GetManifestResourceNames()
-                    .First(name => name.EndsWith("packed_codebooks_aoTuV_603.bin"));
-
-                using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
-                using MemoryStream memStream = new MemoryStream();
-                resourceStream.CopyTo(memStream);
-                embeddedCodebook = memStream.ToArray();
-            }
-
-            return embeddedCodebook;
-        }
-
-        // Similar to WriteOgg(), but returns raw bytes and skips RevorbSharp.Convert().
-        // Caller then needs to write bytes to an ogg file manually
-        public byte[] GetOggBytes(string songKey, PsarcTOCEntry? bankEntry = null)
         {
             if (bankEntry == null)
             {
@@ -300,20 +237,26 @@ namespace PsarcUtil
             if (wemEntry == null)
                 throw new InvalidOperationException("Song key [" + songKey + "] has no wem file");
 
-            using MemoryStream oggStream = new MemoryStream();
-
             using (MemoryStream inflateStream = new MemoryStream())
             {
                 psarcFile.InflateEntry(wemEntry, inflateStream);
 
-                BinaryWriter oggWriter = new BinaryWriter(oggStream);
+                BinaryWriter oggWriter = new BinaryWriter(outputStream);
 
-                Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, GetEmbeddedCodebook(), false, false, ForcePacketFormat.NoForcePacketFormat);
+                Wwise_RIFF_Vorbis ww = new Wwise_RIFF_Vorbis(inflateStream, CodebookName, false, false, ForcePacketFormat.NoForcePacketFormat);
 
                 ww.GenerateOgg(oggWriter);
             }
+        }
 
-            return oggStream.ToArray();
+        public byte[] GetOggBytes(string songKey, PsarcTOCEntry? bankEntry = null)
+        {
+            using (MemoryStream oggStream = new MemoryStream())
+            {
+                WriteOgg(songKey, oggStream, bankEntry);
+
+                return oggStream.ToArray();
+            }
         }
 
         void AddArrangement(PsarcTOCEntry toc)
